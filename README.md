@@ -490,33 +490,16 @@ Suggested commit sequence for a 3–4 person team (so history reflects everyone'
 9. `docs: README, Postman collection, diagrams` (Member 4)
 10. `chore: final review, error handling polish` (all)
 
-## 26. Team Member Section
-
-_(Add a one-line description of what each member built, matching the commit history above.)_
-
-## 27. Known Limitations / Challenges
+## 26. Known Limitations / Challenges
 
 - Single currency and single time zone assumed throughout (per spec's stated boundaries).
 - Payment gateway is not integrated — refunds are calculated and stored, not actually transferred (mocked, per spec).
 - Dynamic pricing auto-classifies weekend vs. standard by day-of-week; true calendar-based "peak season" date ranges (e.g. Dec 20–Jan 5) are supported via the optional `season` override on a booking but are not auto-detected from a date-range table, to keep the schema and logic simple and explainable for a CIA-3 submission.
 
-## 28. Future Enhancements
+## 27. Future Enhancements
 
 - A `seasonCalendar` collection mapping date ranges to seasons, so `peak`/`off-peak` can be auto-detected like `weekend` is.
 - Multi-currency support.
 - Real payment gateway integration for refunds.
 - Room-level (not just room-type-level) assignment at booking time.
 
-## 29. Deliverables Checklist
-
-- [x] Complete Node.js + Express.js + MongoDB source code
-- [x] README.md with setup instructions and API endpoint list
-- [x] Postman collection covering all implemented endpoints
-- [x] GitHub repository created and pushed _(you do this)_
-- [x] PPT presentation _(see PPT_CONTENT.md)_
-- [x] PDF report _(see PDF_CONTENT.md)_
-- [x] Team Details page completed _(fill in table above)_
-
-## 30. Grading Alignment
-
-Built to satisfy every item in the CIA-3 rubric (functional modules, DB design, code quality, error handling, GitHub hygiene, PPT content, viva readiness) — see `PPT_CONTENT.md` and `PDF_CONTENT.md` for presentation/report structure.
