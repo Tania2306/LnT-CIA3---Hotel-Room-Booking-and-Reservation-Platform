@@ -126,62 +126,52 @@ See the 13 modules table below — every listed module is fully implemented with
 To keep historical invoices accurate even if an admin changes a pricing rule later, `bookings` also stores a denormalized snapshot (`basePriceAtBooking`, `multiplierApplied`) at the time of booking.
 
 ### ER / Collection Diagram
-
-```mermaid
-erDiagram
-    USERS ||--o{ BOOKINGS : makes
-    HOTELS ||--o{ ROOMTYPES : has
-    ROOMTYPES ||--o{ ROOMS : has
-    ROOMTYPES ||--o{ PRICINGRULES : has
-    HOTELS ||--o{ BOOKINGS : receives
-    ROOMTYPES ||--o{ BOOKINGS : booked_as
-
-    USERS {
-        ObjectId _id
-        string name
-        string email
-        string passwordHash
-        string role
-    }
-    HOTELS {
-        ObjectId _id
-        string name
-        string city
-        array amenities
-        number rating
-    }
-    ROOMTYPES {
-        ObjectId _id
-        ObjectId hotelId
-        string name
-        number basePrice
-        number totalRooms
-        number capacity
-    }
-    ROOMS {
-        ObjectId _id
-        ObjectId roomTypeId
-        string roomNumber
-        string housekeepingStatus
-    }
-    BOOKINGS {
-        ObjectId _id
-        ObjectId guestId
-        ObjectId hotelId
-        ObjectId roomTypeId
-        date checkIn
-        date checkOut
-        string status
-        number totalAmount
-    }
-    PRICINGRULES {
-        ObjectId _id
-        ObjectId roomTypeId
-        string season
-        number multiplier
-    }
 ```
+  USERS
+  -----
+  _id, name, email, passwordHash, role
+      |
+      | (guestId) one user makes many bookings
+      v
+  BOOKINGS  --------------------------+
+  -----                               |
+  _id, guestId, hotelId, roomTypeId,  |
+  checkIn, checkOut, status,          |
+  totalAmount, cancellation{}         |
+      ^                    ^          |
+      | (hotelId)          | (roomTypeId)
+      |                    |
+  HOTELS               ROOMTYPES
+  -----                 -----
+  _id, name,            _id, hotelId, name,
+  city, amenities[],    basePrice, totalRooms,
+  rating                capacity
+      |                    |   |
+      | (hotelId)          |   | (roomTypeId)
+      v                    |   v
+  ROOMTYPES  <-------------+  ROOMS
+  (one hotel has many         -----
+   room types)                _id, roomTypeId,
+                               roomNumber,
+                               housekeepingStatus
 
+  ROOMTYPES also has many PRICINGRULES:
+  PRICINGRULES
+  -----
+  _id, roomTypeId, season, multiplier
+  (one room type -> many pricing rules, one per season)
+
+  Relationship key:
+    one hotel         -> many room types
+    one room type      -> many rooms
+    one room type      -> many pricing rules
+    one room type      -> many bookings
+    one hotel          -> many bookings
+    one user (guest)   -> many bookings
+
+  All relationships use Mongoose references (ObjectId), not
+  embedding.
+```
 ## 8. Database Indexes
 
 | Collection | Index | Reason |
@@ -391,16 +381,26 @@ Consistent response shape:
 
 ## 19. Booking Workflow
 
-```mermaid
-stateDiagram-v2
-    [*] --> reserved: POST /api/bookings
-    reserved --> confirmed: PUT /confirm (staff/admin)
-    confirmed --> checked_in: PUT /checkin (staff/admin)
-    checked_in --> checked_out: PUT /checkout (staff/admin)
-    reserved --> cancelled: PUT /cancel
-    confirmed --> cancelled: PUT /cancel
-    checked_out --> [*]
-    cancelled --> [*]
+```
+  [ reserved ]
+       |
+       | PUT /confirm (staff/admin)
+       v
+  [ confirmed ] ----------------+
+       |                        |
+       | PUT /checkin           | PUT /cancel
+       v                        v
+  [ checked-in ]           [ cancelled ]
+       |
+       | PUT /checkout
+       v
+  [ checked-out ]
+
+  Also allowed: reserved -> cancelled (PUT /cancel)
+
+  Any transition not drawn above (e.g. checked-out -> reserved,
+  cancelled -> confirmed) is rejected with:
+    409 INVALID_STATUS_TRANSITION
 ```
 
 Transitions not shown above (e.g. `checked-out → reserved`, `cancelled → confirmed`) are rejected with `409 INVALID_STATUS_TRANSITION`.
