@@ -75,15 +75,50 @@ See the 13 modules table below — every listed module is fully implemented with
 
 ## 7. Database Collections & Relationships
 
-| Collection | Key Fields | Relationship |
-|---|---|---|
-| `users` | name, email, passwordHash, role | referenced by bookings (guestId) |
-| `hotels` | name, city, amenities[], rating | one hotel → many roomTypes |
-| `roomTypes` | hotelId, name, basePrice, totalRooms, capacity | references hotels; one roomType → many rooms, bookings, pricingRules |
-| `rooms` | roomTypeId, roomNumber, housekeepingStatus | references roomTypes |
-| `bookings` | guestId, hotelId, roomTypeId, checkIn, checkOut, status, totalAmount, cancellation{} | references users, hotels, roomTypes |
-| `pricingRules` | roomTypeId, season, multiplier | references roomTypes |
+  USERS
+  -----
+  _id, name, email, passwordHash, role
+      |
+      | (guestId) one user makes many bookings
+      v
+  BOOKINGS  --------------------------+
+  -----                               |
+  _id, guestId, hotelId, roomTypeId,  |
+  checkIn, checkOut, status,          |
+  totalAmount, cancellation{}         |
+      ^                    ^          |
+      | (hotelId)          | (roomTypeId)
+      |                    |
+  HOTELS               ROOMTYPES
+  -----                 -----
+  _id, name,            _id, hotelId, name,
+  city, amenities[],    basePrice, totalRooms,
+  rating                capacity
+      |                    |   |
+      | (hotelId)          |   | (roomTypeId)
+      v                    |   v
+  ROOMTYPES  <-------------+  ROOMS
+  (one hotel has many         -----
+   room types)                _id, roomTypeId,
+                               roomNumber,
+                               housekeepingStatus
 
+  ROOMTYPES also has many PRICINGRULES:
+  PRICINGRULES
+  -----
+  _id, roomTypeId, season, multiplier
+  (one room type -> many pricing rules, one per season)
+
+  Relationship key:
+    one hotel         -> many room types
+    one room type      -> many rooms
+    one room type      -> many pricing rules
+    one room type      -> many bookings
+    one hotel          -> many bookings
+    one user (guest)   -> many bookings
+
+  All relationships use Mongoose references (ObjectId), not
+  embedding -- see README section 7 for the reasoning.
 **Reference vs. embed reasoning:** Every relationship above uses a Mongoose **reference** (ObjectId), not embedding. Hotels, room types, rooms, and bookings are each large, independently updated, and independently queried entities — e.g. housekeeping status on one room changes without touching its room type, and a booking's status changes many times through its lifecycle without touching the hotel or room type it references. None of these documents are "always read together and rarely updated independently," which is the rule of thumb for embedding, so referencing is the deliberate choice throughout. The one exception is `booking.cancellation`, which **is** embedded as a small sub-document because it is only ever read/written together with its parent booking.
 
 To keep historical invoices accurate even if an admin changes a pricing rule later, `bookings` also stores a denormalized snapshot (`basePriceAtBooking`, `multiplierApplied`) at the time of booking.
