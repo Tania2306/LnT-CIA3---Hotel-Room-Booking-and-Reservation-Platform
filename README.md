@@ -74,7 +74,7 @@ See the 13 modules table below — every listed module is fully implemented with
 | 13 | Admin Occupancy Reports | `reportController.js` — live DB aggregation |
 
 ## 7. Database Collections & Relationships
-
+```
   USERS
   -----
   _id, name, email, passwordHash, role
@@ -114,12 +114,14 @@ See the 13 modules table below — every listed module is fully implemented with
     one room type      -> many rooms
     one room type      -> many pricing rules
     one room type      -> many bookings
-    one hotel          -> many bookings
+    one hotel          -> many bookings9
     one user (guest)   -> many bookings
 
   All relationships use Mongoose references (ObjectId), not
   embedding -- see README section 7 for the reasoning.
-**Reference vs. embed reasoning:** Every relationship above uses a Mongoose **reference** (ObjectId), not embedding. Hotels, room types, rooms, and bookings are each large, independently updated, and independently queried entities — e.g. housekeeping status on one room changes without touching its room type, and a booking's status changes many times through its lifecycle without touching the hotel or room type it references. None of these documents are "always read together and rarely updated independently," which is the rule of thumb for embedding, so referencing is the deliberate choice throughout. The one exception is `booking.cancellation`, which **is** embedded as a small sub-document because it is only ever read/written together with its parent booking.
+  
+```
+ **Reference vs. embed reasoning:** Every relationship above uses a Mongoose **reference** (ObjectId), not embedding. Hotels, room types, rooms, and bookings are each large, independently updated, and independently queried entities — e.g. housekeeping status on one room changes without touching its room type, and a booking's status changes many times through its lifecycle without touching the hotel or room type it references. None of these documents are "always read together and rarely updated independently," which is the rule of thumb for embedding, so referencing is the deliberate choice throughout. The one exception is `booking.cancellation`, which **is** embedded as a small sub-document because it is only ever read/written together with its parent booking.
 
 To keep historical invoices accurate even if an admin changes a pricing rule later, `bookings` also stores a denormalized snapshot (`basePriceAtBooking`, `multiplierApplied`) at the time of booking.
 
