@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grand Reservation — Hotel Booking Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #12161d;
+    --panel: #1a2029;
+    --panel-hi: #212936;
+    --line: #2a3341;
+    --gold: #c9a15f;
+    --gold-dim: #8a744c;
+    --text: #e9e6df;
+    --muted: #8b93a3;
+    --danger: #c9705f;
+    --ok: #7fae8e;
+    --radius: 3px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  header {
+    padding: 40px 48px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 28px;
+    margin: 0 0 4px;
+    letter-spacing: 0.2px;
+  }
+
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .config-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .config-row label {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .config-row input {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    width: 220px;
+  }
+
+  .session-pill {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .session-pill strong { color: var(--gold); font-weight: 500; }
+
+  nav {
+    display: flex;
+    gap: 2px;
+    padding: 0 48px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 14px 18px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s;
+  }
+
+  nav button:hover { color: var(--text); }
+
+  nav button.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 44px 24px 80px;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .view h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    margin: 0 0 6px;
+  }
+
+  .view .sub {
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 28px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 24px;
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 9px 11px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--gold-dim);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  button.primary {
+    background: var(--gold);
+    color: #1a1508;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  button.primary:hover { background: #d9b16f; }
+  button.primary:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+
+  button.ghost {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  button.ghost:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  button.danger-ghost {
+    background: none;
+    border: 1px solid #4a3530;
+    color: var(--danger);
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  button.danger-ghost:hover { border-color: var(--danger); }
+
+  .result-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    background: var(--panel);
+  }
+
+  .result-card .title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .result-card .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .result-card .price {
+    color: var(--gold);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .status-tag {
+    display: inline-block;
+    font-size: 11.5px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    text-transform: lowercase;
+  }
+  .status-tag.reserved, .status-tag.confirmed { color: var(--gold); border-color: var(--gold-dim); }
+  .status-tag.checked-in { color: var(--ok); border-color: #3f5a48; }
+  .status-tag.checked-out { color: var(--muted); }
+  .status-tag.cancelled { color: var(--danger); border-color: #4a3530; }
+
+  .msg {
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    margin-bottom: 18px;
+    display: none;
+  }
+  .msg.show { display: block; }
+  .msg.error { background: #2a1c1a; color: #e0a99b; border: 1px solid #4a3530; }
+  .msg.success { background: #1a2620; color: #a9d1b6; border: 1px solid #3f5a48; }
+
+  .empty {
+    color: var(--muted);
+    font-size: 13.5px;
+    padding: 24px 0;
+  }
+
+  .booking-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .divider { height: 1px; background: var(--line); margin: 28px 0; }
+
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .status-indicator.online {
+    color: var(--ok);
+    border-color: #3f5a48;
+    background: #15221b;
+  }
+  .status-indicator.offline {
+    color: var(--danger);
+    border-color: #4a3530;
+    background: #251614;
+  }
+  .status-indicator .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+  }
+
+  .btn-logout {
+    margin-left: 8px;
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 2px 7px;
+    border-radius: var(--radius);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .btn-logout:hover {
+    color: var(--text);
+    border-color: var(--gold-dim);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Grand Reservation</h1>
+  <p>Minimal demo client for the Hotel Chain Reservation Backend API.</p>
+  <div class="config-row">
+    <label>API base URL</label>
+    <input id="baseUrl" value="http://localhost:5000" />
+    <button class="ghost" id="btnTestConn" onclick="checkBackendConnection(true)" style="padding: 5px 12px; font-size: 12px;">Test Connection</button>
+    <span class="status-indicator" id="connStatus"><span class="dot" style="background:#e5c07b"></span> Checking connection...</span>
+    <span class="session-pill" id="sessionPill">Not signed in</span>
+  </div>
+</header>
+
+<nav>
+  <button class="tab-btn active" data-view="auth">Sign In</button>
+  <button class="tab-btn" data-view="search">Search</button>
+  <button class="tab-btn" data-view="mybookings">My Bookings</button>
+</nav>
+
+<main>
+
+  <div id="msgBox" class="msg"></div>
+
+  <!-- AUTH VIEW -->
+  <section class="view active" id="view-auth">
+    <div class="two-col">
+      <div>
+        <h2>Sign in</h2>
+        <p class="sub">Use a seeded account, e.g. guest@hotelchain.com</p>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" value="guest@hotelchain.com" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="loginPassword" value="Guest@123" />
+        </div>
+        <button class="primary" onclick="login()">Sign in</button>
+      </div>
+      <div>
+        <h2>Register</h2>
+        <p class="sub">Creates a new guest account.</p>
+        <div class="field">
+          <label>Name</label>
+          <input type="text" id="regName" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="regEmail" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="regPassword" placeholder="At least 6 characters" />
+        </div>
+        <button class="primary" onclick="register()">Create account</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH VIEW -->
+  <section class="view" id="view-search">
+    <h2>Search availability</h2>
+    <p class="sub">Find open room types across hotels for your dates.</p>
+    <div class="row">
+      <div class="field">
+        <label>City</label>
+        <input type="text" id="searchCity" placeholder="e.g. Bengaluru" />
+      </div>
+      <div class="field">
+        <label>Guests</label>
+        <input type="number" id="searchGuests" value="2" min="1" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Check-in</label>
+        <input type="date" id="searchCheckIn" />
+      </div>
+      <div class="field">
+        <label>Check-out</label>
+        <input type="date" id="searchCheckOut" />
+      </div>
+    </div>
+    <button class="primary" onclick="searchAvailability()">Search</button>
+
+    <div class="divider"></div>
+    <div id="searchResults"></div>
+  </section>
+
+  <!-- MY BOOKINGS VIEW -->
+  <section class="view" id="view-mybookings">
+    <h2>My bookings</h2>
+    <p class="sub">Your reservation history, from most recent stay.</p>
+    <button class="ghost" onclick="loadMyBookings()">Refresh</button>
+    <div class="divider"></div>
+    <div id="bookingsList"></div>
+  </section>
+
+</main>
+
+<script>
+  let token = null;
+  let currentUser = null;
+
+  function base() {
+    const inputVal = document.getElementById('baseUrl').value.trim();
+    if (inputVal) return inputVal.replace(/\/$/, '');
+    return window.location.origin && window.location.origin !== 'null' ? window.location.origin : 'http://localhost:5000';
+  }
+
+  async function checkBackendConnection(showMessage = false) {
+    const statusEl = document.getElementById('connStatus');
+    statusEl.className = 'status-indicator';
+    statusEl.innerHTML = '<span class="dot" style="background:#e5c07b"></span> Checking...';
+    try {
+      const res = await fetch(base() + '/api/health', { method: 'GET' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        statusEl.className = 'status-indicator online';
+        statusEl.innerHTML = '<span class="dot"></span> Backend Connected';
+        if (showMessage) showMsg('Connected to backend successfully!', 'success');
+        return true;
+      } else {
+        throw new Error(data.message || 'Unexpected response');
+      }
+    } catch (err) {
+      statusEl.className = 'status-indicator offline';
+      statusEl.innerHTML = '<span class="dot"></span> Backend Offline';
+      if (showMessage) {
+        showMsg(`Cannot connect to backend at ${base()}. Make sure the server is running on port 5000.`, 'error');
+      }
+      return false;
+    }
+  }
+
+  function showMsg(text, type) {
+    const box = document.getElementById('msgBox');
+    box.textContent = text;
+    box.className = 'msg show ' + type;
+    setTimeout(() => box.classList.remove('show'), 5000);
+  }
+
+  function updateSessionPill() {
+    const pill = document.getElementById('sessionPill');
+    pill.innerHTML = currentUser
+      ? `Signed in as <strong>${currentUser.name}</strong> (${currentUser.role}) <button class="btn-logout" onclick="logout()">Sign out</button>`
+      : 'Not signed in';
+  }
+
+  function logout() {
+    token = null;
+    currentUser = null;
+    updateSessionPill();
+    showMsg('Signed out successfully.', 'success');
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('view-' + btn.dataset.view).classList.add('active');
+      if (btn.dataset.view === 'mybookings') loadMyBookings();
+    });
+  });
+
+  async function api(path, options = {}) {
+    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    let res;
+    try {
+      res = await fetch(base() + path, { ...options, headers });
+    } catch (networkErr) {
+      checkBackendConnection(false);
+      throw new Error(`Cannot connect to backend at ${base()}. Please verify the backend server is running.`);
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
+    return data;
+  }
+
+  async function login() {
+    try {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const data = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+      token = data.data.token;
+      currentUser = data.data.user;
+      updateSessionPill();
+      showMsg('Signed in successfully.', 'success');
+    } catch (err) {
+      showMsg(err.message, 'error');
+    }
+  }
+
+  async function register() {
+    try {
+      const name = document.getElementById('regName').value;
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      const data = await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) });
+      token = data.data.token;
+      currentUser = data.data.user;
+      updateSessionPill();
+      showMsg('Account created and signed in.', 'success');
+    } catch (err) {
+      showMsg(err.message, 'error');
+    }
+  }
+
+  async function searchAvailability() {
+    const city = document.getElementById('searchCity').value;
+    const guests = document.getElementById('searchGuests').value;
+    const checkIn = document.getElementById('searchCheckIn').value;
+    const checkOut = document.getElementById('searchCheckOut').value;
+    const results = document.getElementById('searchResults');
+
+    if (!checkIn || !checkOut) {
+      showMsg('Please choose both check-in and check-out dates.', 'error');
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams({ checkIn, checkOut, guests: guests || 1 });
+      if (city) params.append('city', city);
+      const data = await api('/api/hotels/search?' + params.toString());
+
+      if (!data.data.length) {
+        results.innerHTML = '<div class="empty">No availability matched your search.</div>';
+        return;
+      }
+
+      results.innerHTML = data.data.map(r => `
+        <div class="result-card">
+          <div class="title">${r.hotel.name} — ${r.roomType.name}</div>
+          <div class="meta">${r.hotel.city} · sleeps ${r.roomType.capacity} · ${r.roomsAvailable} of ${r.totalRooms} rooms free</div>
+          <div class="price">₹${r.roomType.basePrice} / night base</div>
+          <div style="margin-top:12px;">
+            <button class="primary" onclick="bookRoom('${r.hotel.id}','${r.roomType.id}','${checkIn}','${checkOut}',${guests || 1})">Book this room</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      showMsg(err.message, 'error');
+    }
+  }
+
+  async function bookRoom(hotelId, roomTypeId, checkIn, checkOut, guests) {
+    if (!token) {
+      showMsg('Please sign in first.', 'error');
+      return;
+    }
+    try {
+      const data = await api('/api/bookings', {
+        method: 'POST',
+        body: JSON.stringify({ hotelId, roomTypeId, checkIn, checkOut, guests })
+      });
+      showMsg(`Booked — total ₹${data.data.booking.totalAmount}. See "My Bookings" for details.`, 'success');
+    } catch (err) {
+      showMsg(err.message, 'error');
+    }
+  }
+
+  async function loadMyBookings() {
+    const list = document.getElementById('bookingsList');
+    if (!token || !currentUser) {
+      list.innerHTML = '<div class="empty">Sign in to view your bookings.</div>';
+      return;
+    }
+    try {
+      const data = await api(`/api/guests/${currentUser.id}/bookings`);
+      if (!data.data.length) {
+        list.innerHTML = '<div class="empty">No bookings yet — search for a room to get started.</div>';
+        return;
+      }
+      list.innerHTML = data.data.map(b => `
+        <div class="result-card">
+          <div class="title">${b.hotelId?.name || 'Hotel'} — ${b.roomTypeId?.name || 'Room'}</div>
+          <div class="meta">
+            ${new Date(b.checkIn).toLocaleDateString()} → ${new Date(b.checkOut).toLocaleDateString()}
+            &nbsp;·&nbsp; <span class="status-tag ${b.status}">${b.status}</span>
+          </div>
+          <div class="price">₹${b.totalAmount}</div>
+          <div class="booking-actions">
+            ${['reserved','confirmed'].includes(b.status) ? `<button class="danger-ghost" onclick="cancelBooking('${b._id}')">Cancel</button>` : ''}
+            <button class="ghost" onclick="viewInvoice('${b._id}')">View invoice</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      showMsg(err.message, 'error');
+    }
+  }
+
+  async function cancelBooking(id) {
+    try {
+      const data = await api(`/api/bookings/${id}/cancel`, { method: 'PUT' });
+      showMsg(`Cancelled. Refund: ₹${data.data.refund.refundAmount} (${data.data.refund.policy}).`, 'success');
+      loadMyBookings();
+    } catch (err) {
+      showMsg(err.message, 'error');
+    }
+  }
+
+  async function viewInvoice(id) {
+    try {
+      const data = await api(`/api/bookings/${id}/invoice`);
+      const inv = data.data;
+      alert(
+        `Invoice\n\nHotel: ${inv.hotel.name}\nRoom: ${inv.roomType.name}\nNights: ${inv.nights}\nSubtotal: ₹${inv.subtotal}\nTax: ₹${inv.tax}\nRefund: ₹${inv.refund}\nFinal amount: ₹${inv.finalAmount}\nStatus: ${inv.status}`
+      );
+    } catch (err) {
+      showMsg(err.message, 'error');
+    }
+  }
+
+  // Sensible default dates: check-in tomorrow, check-out day after.
+  (function setDefaultDates() {
+    const in1 = new Date(); in1.setDate(in1.getDate() + 1);
+    const in2 = new Date(); in2.setDate(in2.getDate() + 2);
+    document.getElementById('searchCheckIn').value = in1.toISOString().slice(0, 10);
+    document.getElementById('searchCheckOut').value = in2.toISOString().slice(0, 10);
+  })();
+
+  // Auto-detect base URL when served from the backend
+  if (window.location.protocol.startsWith('http')) {
+    document.getElementById('baseUrl').value = window.location.origin;
+  }
+
+  // Check connection immediately on startup
+  checkBackendConnection(false);
+
+  // Re-check when base URL input is changed
+  document.getElementById('baseUrl').addEventListener('change', () => checkBackendConnection(true));
+</script>
+
+</body>
+</html>
