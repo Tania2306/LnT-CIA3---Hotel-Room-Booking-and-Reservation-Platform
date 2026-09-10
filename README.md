@@ -158,16 +158,51 @@ erDiagram
 
 ## 9. Project Architecture
 
-```mermaid
-flowchart TD
-    Client[Postman / Frontend Client] -->|HTTP + JWT| Express[Express.js App]
-    Express --> MW[Middleware: cors, json, auth, validate]
-    MW --> Routes[Routes Layer]
-    Routes --> Controllers[Controllers - Business Logic]
-    Controllers --> Models[Mongoose Models]
-    Models --> Mongo[(MongoDB)]
-    Controllers -->|on error| ErrorHandler[Centralized Error Handler]
-    ErrorHandler --> Client
+```  Postman / Browser Client
+            |
+            | HTTP request + JWT (Authorization: Bearer <token>)
+            v
+  +-----------------------------+
+  |        Express.js App        |
+  |   (server.js entry point)    |
+  +-----------------------------+
+            |
+            v
+  +-----------------------------+
+  |         Middleware           |
+  |  cors -> express.json ->     |
+  |  authenticate -> authorize   |
+  |  -> validate                 |
+  +-----------------------------+
+            |
+            v
+  +-----------------------------+
+  |         Routes Layer         |
+  |  authRoutes, hotelRoutes,    |
+  |  bookingRoutes, etc.         |
+  +-----------------------------+
+            |
+            v
+  +-----------------------------+
+  |   Controllers (Business      |
+  |   Logic) - one per module    |
+  +-----------------------------+
+            |
+            v
+  +-----------------------------+
+  |     Mongoose Models          |
+  |  User, Hotel, RoomType,      |
+  |  Room, Booking, PricingRule  |
+  +-----------------------------+
+            |
+            v
+  +-----------------------------+
+  |          MongoDB             |
+  +-----------------------------+
+
+  On any failure at the Controller layer, control passes to a
+  centralized Error Handler, which returns a consistent JSON
+  error response to the client instead of crashing the server.
 ```
 
 ## 10. Folder Structure
